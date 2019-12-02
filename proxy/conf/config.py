@@ -18,7 +18,7 @@
 RUCKUS_INIT_TOPOLOGY = {
     "boxes": [
         {
-            "id": 10,
+            "id": "72a5e214-48e8-48b1-9cf4-adcd0a58c61e",
             "name": "ruckus-east-roof",
             "location": {
                 "longitude": -2.597035,
@@ -27,20 +27,20 @@ RUCKUS_INIT_TOPOLOGY = {
             },
             "phys": [
                 {
-                    "id": 11,
+                    "id": "fb93d9cf-93f6-4380-a1d3-2161eba2e871",
                     "name": "eth0",
                     "type": "WIRED_TUNNEL",
                     "config": None
                 },
                 {
-                    "id": 12,
+                    "id": "804cec3f-4262-4c94-b988-b4ae40fdb10e",
                     "name": "phy0",
                     "type": "SUB6_ACCESS",
                     "config": None
                 }]
         },
         {
-            "id": 20,
+            "id": "ea6c790a-2060-4db1-94c8-b957631c9937",
             "name": "ruckus-middle-roof",
             "location": {
                 "longitude": -2.598227,
@@ -49,19 +49,19 @@ RUCKUS_INIT_TOPOLOGY = {
             },
             "phys": [
                 {
-                    "id": 21,
+                    "id": "8a13fdd3-58cc-4030-8370-bf5013977732",
                     "name": "eth0",
                     "type": "WIRED_TUNNEL",
                     "config": None
                 },
                 {
-                    "id": 22,
+                    "id": "a04ecb81-4e91-4509-bc74-18ca44263943",
                     "name": "phy0",
                     "type": "SUB6_ACCESS",
                     "config": None
                 }]
         }, {
-            "id": 30,
+            "id": "73f2c8b7-4a24-4bc6-8188-b3cd2668b1dd",
             "name": "ruckus-west-roof",
             "location": {
                 "longitude": -2.599009,
@@ -70,13 +70,13 @@ RUCKUS_INIT_TOPOLOGY = {
             },
             "phys": [
                 {
-                    "id": 31,
+                    "id": "210e1929-aa92-4e12-97cf-74090a0a257c",
                     "name": "eth0",
                     "type": "WIRED_TUNNEL",
                     "config": None
                 },
                 {
-                    "id": 32,
+                    "id": "0b3d057b-c5da-4b14-a102-0edd51caada5",
                     "name": "phy0",
                     "type": "SUB6_ACCESS",
                     "config": None
@@ -89,37 +89,37 @@ RUCKUS_INIT_TOPOLOGY = {
 # Mapping between AP ids in Ruckus and AP ids in topology
 RUCKUS_ID_MAPPING = {
     "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
-    11: {
+    "fb93d9cf-93f6-4380-a1d3-2161eba2e871": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "68b00bbb-f400-462d-b4f4-3e9160013155",
         "wlangroup_id": "bd690a30-bab7-11e9-91f9-22d1e8e61ae8",
         "type": "WIRED_TUNNEL"
     },
-    12: {
+    "804cec3f-4262-4c94-b988-b4ae40fdb10e": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "68b00bbb-f400-462d-b4f4-3e9160013155",
         "wlangroup_id": "bd690a30-bab7-11e9-91f9-22d1e8e61ae8",
         "type": "2.4GHZ"
     },
-    21: {
+    "8a13fdd3-58cc-4030-8370-bf5013977732": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "6c9ee78e-0928-4526-b461-2ca45acf769b",
         "wlangroup_id": "ca8beca2-bab7-11e9-91f9-22d1e8e61ae8",
         "type": "WIRED_TUNNEL"
     },
-    22: {
+    "a04ecb81-4e91-4509-bc74-18ca44263943": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "6c9ee78e-0928-4526-b461-2ca45acf769b",
         "wlangroup_id": "ca8beca2-bab7-11e9-91f9-22d1e8e61ae8",
         "type": "2.4GHZ"
     },
-    31: {
+    "210e1929-aa92-4e12-97cf-74090a0a257c": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "5aa9383e-ca82-41da-bb4f-e804f48de9bf",
         "wlangroup_id": "a631da42-771e-11e9-91f9-22d1e8e61ae8",
         "type": "WIRED_TUNNEL"
     },
-    32: {
+    "0b3d057b-c5da-4b14-a102-0edd51caada5": {
         "zone_id": "f77a8816-3049-40cd-8484-82919275ddc3",
         "apgroup_id": "5aa9383e-ca82-41da-bb4f-e804f48de9bf",
         "wlangroup_id": "a631da42-771e-11e9-91f9-22d1e8e61ae8",

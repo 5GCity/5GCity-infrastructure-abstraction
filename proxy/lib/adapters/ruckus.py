@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json, requests
+import uuid 
 from urllib3.exceptions import InsecureRequestWarning
 from copy import deepcopy
 
@@ -73,12 +74,8 @@ class RuckusWiFi(object):
         for box in self._topology["boxes"]:
             for phy in box["phys"]:
                 if self._phy_id_mapping[phy["id"]]["type"] == "2.4GHZ":
-                    u_path = '/v7_0/rkszones/{p[zone_id]}/'.format(
-                        p=self._phy_id_mapping[phy["id"]])
-                    u_path += 'apgroups/{p[apgroup_id]}'.format(
-                        p=self._phy_id_mapping[phy["id"]])
-                    u_path += '?serviceTicket={t}'.format(
-                        t=ticket)
+                    u_path = '/v7_0/rkszones/{p[zone_id]}/apgroups/{p[apgroup_id]}?serviceTicket={t}'.\
+                        format(p=self._phy_id_mapping[phy["id"]],t=ticket)
                     url = self._url + u_path
                     resp = requests.get(
                         url,
@@ -96,14 +93,6 @@ class RuckusWiFi(object):
                         "channelBandwidth": ap_group["wifi24"]["channelWidth"],
                         "txPower": 3600
                     }
-
-    # Find free chunk_ids
-    def __next_chunk_id(self):
-        if self._chunks.keys(): 
-            max_id = max(self._chunks.keys())
-            return max_id + 1
-        else:
-            return 1
 
     # chunkete-topology-controller implementation
     def getChunketeTopology(self):       
@@ -155,8 +144,6 @@ class RuckusWiFi(object):
                         u_path += '?serviceTicket={t}'.format(
                             p=self._phy_id_mapping[phy_id], t=ticket)
                         url = self._url + u_path
-                        # f'/v7_0/rkszones/{self._phy_id_mapping[phy_id]["zone_id"]}
-                        # /apgroups/{self._phy_id_mapping[phy_id]["apgroup_id"]}?serviceTicket={ticket}'
                         resp = requests.patch(
                             url,
                             data=json.dumps(config),
@@ -183,7 +170,7 @@ class RuckusWiFi(object):
 
     def registerNewChunk(self, content):
         chunk = json.loads(content)
-        id = self.__next_chunk_id()
+        id = str(uuid.uuid4())
         self._chunks[id] = chunk
         self._chunks[id]["id"]=id
         data = {
@@ -192,32 +179,10 @@ class RuckusWiFi(object):
         return data, 201
 
     def getChunkById(self, chunk_id):
-        """
-            url = "http://{}:{}/chunkete/chunk/{}".format(
-                self._ip, str(self._port), id)
-            resp = requests.get()
-                url,
-                data=parameters,
-                headers=_headers
-                )
-            print (url)
-            return resp
-        """
-        return self._chunks[int(chunk_id)]
+        return self._chunks[chunk_id]
         
     def removeExistingChunk(self, chunk_id):
-        """
-            url = "http://{}:{}/chunkete/chunk/{}".format(
-                self._ip, str(self._port), id)
-            resp = requests.delete(
-                url,
-                data=parameters,
-                headers=_headers
-                )
-            print (url)
-            return resp
-        """
-        del self._chunks[int(chunk_id)]
+        del self._chunks[chunk_id]
         return '', 200
 
         
@@ -228,28 +193,7 @@ class RuckusWiFi(object):
         ]
 
     def registerNewSWAMService(self, chunk_id, content):
-        """
-            {
-            "lteConfig": {
-                "cellReserved": "not-reserved",
-                "mmeAddress": "192.168.50.2",
-                "mmePort": 333,
-                "plmnId": "00101"
-            },
-            "selectedPhys": [
-            (interfaces type of SUB6_ACCESS, LTE_PRIMARY_PLMN and WIRED_TUNNEL)
-                14, 23
-            ],
-            "vlanId": 201, (1-4095)
-            "wirelessConfig": {
-                "encryption": "WPA", (NONE, WPA, WPA2, WEP s)
-                "password": "secret",
-                "ssid": "Test"
-            }
-            }
-        """
         service = json.loads(content)
-        ticket = self.__login()
 
         if service["wirelessConfig"]["encryption"] == "NONE":
             encryption = {
@@ -276,12 +220,12 @@ class RuckusWiFi(object):
             }
         else:
             return '',401
-
+        
         # Create WLAN
+        ticket = self.__login()
         u_path = '/v7_0/rkszones/{p[zone_id]}/wlans?serviceTicket={t}'.format(
             p=self._phy_id_mapping, t=ticket)
         url = self._url + u_path
-        # f'/v7_0/rkszones/{self._phy_id_mapping["zone_id"]}/wlans?serviceTicket={ticket}'
         wlan = {
             "name": service["wirelessConfig"]["ssid"],
             "ssid": service["wirelessConfig"]["ssid"],
@@ -300,12 +244,12 @@ class RuckusWiFi(object):
 
         # If WLAN Created OK, raise it up on each of the interfaces      
         if resp.status_code == 201:
-            service["id"] = int(json.loads(resp.text)["id"])
+            service["id"] = json.loads(resp.text)["id"]
             return_data = {
                 "id": service["id"]
             }
             data = {
-                "id": str(service["id"])
+                "id": service["id"]
             }
             for phy in service["selectedPhys"]:
                 if self._phy_id_mapping[phy]["type"] in ["2.4GHZ","5GHZ"]:
@@ -317,8 +261,6 @@ class RuckusWiFi(object):
                     u_path += 'members?serviceTicket={t}'.format(
                         t=ticket)
                     url = self._url + u_path
-                    # f'/v7_0/rkszones/{self._phy_id_mapping[phy]["zone_id"]}/wlangroups/
-                    # {self._phy_id_mapping[phy]["wlangroup_id"]}/members?serviceTicket={ticket}'
                     resp = requests.post(
                         url,
                         data= json.dumps(data),
@@ -330,8 +272,6 @@ class RuckusWiFi(object):
                         u_path = '/v7_0/rkszones/{}/wlangroups/{}/members?serviceTicket={}'.format(
                             self._phy_id_mapping["zone_id"], data["id"],ticket)
                         url = self._url + u_path
-                        # f'/v7_0/rkszones/{self._phy_id_mapping["zone_id"]}/wlans/{data["id"]}?
-                        # serviceTicket={ticket}'
                         resp = requests.delete(
                             url,
                             headers=_headers,
@@ -339,42 +279,28 @@ class RuckusWiFi(object):
                         )
                         return resp.text, 401
 
-            self._chunks[int(chunk_id)]["serviceList"].append(service)
+            self._chunks[chunk_id]["serviceList"].append(service)
             self.__logoff(ticket)
             return return_data, 201
         else:
             return resp.text, 401
 
     def getSWAMServiceById(self, chunk_id, service_id):
-        """
-            url = "http://{}:{}/chunkete/chunk/{}/service/SWAM/{}".format(
-                self._ip, str(self._port), chunk_id, service_id)
-            resp = requests.get()
-                url,
-                data=parameters,
-                headers=_headers
-                )
-            print (url)
-            return resp
-        """
         for service in self._chunks[chunk_id]["serviceList"]:
             if service["id"] == service_id:
                 return service
         return '', 404
 
     def removeExistingSWAMService(self, chunk_id, service_id):
-        service_list = self._chunks[int(chunk_id)]["serviceList"]
+        service_list = self._chunks[chunk_id]["serviceList"]
 
         for index in range(len(service_list)):
             if service_list[index]["id"] == service_id:
-                ticket = self.__login()
-
                 # Remove WLAN
+                ticket = self.__login()
                 u_path = '/v7_0/rkszones/{}/wlans/{}?serviceTicket={}'.format(
                     self._phy_id_mapping["zone_id"], service_id, ticket)
                 url = self._url + u_path
-                # f'/v7_0/rkszones/{self._phy_id_mapping["zone_id"]}/wlans/{service_id}?
-                # serviceTicket={ticket}'
                 resp = requests.delete(
                     url,
                     headers=_headers,
@@ -382,7 +308,7 @@ class RuckusWiFi(object):
                 )
 
                 if resp.status_code == 204:
-                    self._chunks[int(chunk_id)]["serviceList"].pop(index)
+                    self._chunks[chunk_id]["serviceList"].pop(index)
                     self.__logoff(ticket)
                     return '', 200
                 else:
