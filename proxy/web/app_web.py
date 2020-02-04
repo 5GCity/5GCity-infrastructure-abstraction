@@ -20,9 +20,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, ForeignKey, Integer, String
 from datetime import datetime
-from lib.adapters.ruckus import RuckusWiFi
-from lib.adapters.i2cat import I2catController
-from conf.config import CONTROLLERS, RUCKUS_ID_MAPPING, RUCKUS_INIT_TOPOLOGY
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, Response, jsonify, render_template, request
 import logging
@@ -30,7 +27,11 @@ import os
 import sys
 import json
 import uuid
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.adapters.ruckus import RuckusWiFi
+from lib.adapters.i2cat import I2catController
+from conf.config import CONTROLLERS, RUCKUS_ID_MAPPING, RUCKUS_INIT_TOPOLOGY
 
 
 # Logger configuration
