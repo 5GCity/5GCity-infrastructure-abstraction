@@ -83,16 +83,34 @@ class RuckusWiFi(object):
                         verify = False
                         )
 
-                    self.__logoff(ticket)
+                    if resp.status_code == 200:
+                        ap_group = json.loads(resp.text)
+                        phy["config"] = {
+                            "channelNumber": ap_group["wifi24"]["channel"],
+                            "channelBandwidth": ap_group["wifi24"]["channelWidth"],
+                            "txPower": 3600
+                        }
+
+                if self._phy_id_mapping[phy["id"]]["type"] == "5GHZ":
+                    u_path = '/v7_0/rkszones/{p[zone_id]}/apgroups/{p[apgroup_id]}?serviceTicket={t}'.\
+                        format(p=self._phy_id_mapping[phy["id"]],t=ticket)
+                    url = self._url + u_path
+                    resp = requests.get(
+                        url,
+                        headers=_headers,
+                        verify = False
+                        )
+
 
                     if resp.status_code == 200:
                         ap_group = json.loads(resp.text)
+                        phy["config"] = {
+                            "channelNumber": ap_group["wifi50"]["indoorChannel"],
+                            "channelBandwidth": ap_group["wifi50"]["channelWidth"],
+                            "txPower": 3600
+                        }
 
-                    phy["config"] = {
-                        "channelNumber": ap_group["wifi24"]["channel"],
-                        "channelBandwidth": ap_group["wifi24"]["channelWidth"],
-                        "txPower": 3600
-                    }
+        self.__logoff(ticket)
 
     # chunkete-topology-controller implementation
     def getChunketeTopology(self):       
@@ -158,8 +176,36 @@ class RuckusWiFi(object):
                         else:
                             return '', 401
                     elif self._phy_id_mapping[phy_id]["type"] == "5GHZ":
-                        # TODO: 5GHz Wireless networks support
-                        return '', 401
+                        config = {
+                            "wifi50": {
+                                "channelWidth": json.loads(
+                                    parameters)["channelBandwidth"],
+                                "indoorChannel": json.loads(
+                                    parameters)["channelNumber"],
+                                "outdoorChannel": json.loads(
+                                    parameters)["channelNumber"]
+                            }
+                        }
+                        u_path = '/v7_0/rkszones/{p[zone_id]}/'.format(
+                            p=self._phy_id_mapping[phy_id])
+                        u_path += '/apgroups/{p[apgroup_id]}'.format(
+                            p=self._phy_id_mapping[phy_id])
+                        u_path += '?serviceTicket={t}'.format(
+                            p=self._phy_id_mapping[phy_id], t=ticket)
+                        url = self._url + u_path
+                        resp = requests.patch(
+                            url,
+                            data=json.dumps(config),
+                            headers=_headers,
+                            verify = False
+                            )
+                        
+                        self.__logoff(ticket)
+                        if resp.status_code == 204:
+                            phy["config"] = json.loads(parameters)
+                            return '', 201
+                        else:
+                            return '', 401
                     elif self._phy_id_mapping[phy_id]["type"] == "WIRED":
                         # TODO: Wired interface config implied
                         return '', 201
