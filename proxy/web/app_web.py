@@ -27,12 +27,10 @@ import os
 import sys
 import json
 import uuid
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.adapters.ruckus import RuckusWiFi
 from lib.adapters.i2cat import I2catController
 from conf.config import CONTROLLERS, RUCKUS_ID_MAPPING, RUCKUS_INIT_TOPOLOGY
-
 
 # Logger configuration
 log_filename = "logs/output.log"
@@ -722,8 +720,9 @@ def putInterfaceWiredConfig(phy_id):
         if content:
 
             phy = session.query(Phy).filter(Phy.id == phy_id).one()
-            response, code = controllers[phy.controller_id].putInterfaceWiredConfig(
-                phy.phy_id_controller, content)
+            response, code = controllers[phy.controller_id].\
+                putInterfaceWiredConfig(
+                    phy.phy_id_controller, content)
             log_content = "controller:{}:phy_id_controller:{}:phy_id:{}"
             log_content += ":response:{}/{}".\
                 format(
@@ -751,9 +750,15 @@ def putInterfaceWiredConfig(phy_id):
 def putInterfaceWirelessConfig(phy_id):
     # Verify content
     # {
-    #     "channelBandwidth": 20, (Se aceptan 20, 40 y 80)
-    #     "channelNumber": 36, (Se acepta cualquier canal de la banda de 2.4 y/o de la banda de 5GHz; según el nodo puede o no sopotar DFS así que no está restringido a canales "normales")
-    #     "txPower": 2000 (Valor en mBm; se acepta desde 0 hasta 3500 aunque lo normal suelen ser 2300)
+    #     "channelBandwidth": 20,
+    # (Se aceptan 20, 40 y 80)
+    #     "channelNumber": 36,
+    # (Se acepta cualquier canal de la banda de 2.4 y/o de la banda de 5GHz;
+    # según el nodo puede o no sopotar DFS así que no está restringido
+    # a canales "normales")
+    #     "txPower": 2000
+    # (Valor en mBm; se acepta desde 0 hasta 3500 aunque lo
+    # normal suelen ser 2300)
     # }
     try:
         content = request.data
@@ -778,8 +783,8 @@ def putInterfaceWirelessConfig(phy_id):
 
         if content:
             phy = session.query(Phy).filter(Phy.id == phy_id).one()
-            response, code = controllers[phy.controller_id].putInterfaceWirelessConfig(
-                phy.phy_id_controller, content)
+            response, code = controllers[phy.controller_id].\
+                putInterfaceWirelessConfig(phy.phy_id_controller, content)
             log_content = "controller:{}:phy_id_controller:{}:phy_id:{}"
             log_content += ":content:{}:response:{}/{}".\
                 format(
@@ -791,7 +796,8 @@ def putInterfaceWirelessConfig(phy_id):
         else:
             return errorResponder(
                 "VERIFICATION_ERROR", "Malformed request")
-        return API_RESPONSE["CREATED"]["content"], API_RESPONSE["CREATED"]["code"]
+        return (API_RESPONSE["CREATED"]["content"],
+                API_RESPONSE["CREATED"]["code"])
     except KeyError:
         logger.error("Malformed request")
         return errorResponder(
@@ -1034,7 +1040,7 @@ def registerNewSWAMService(chunk_id):
     #     "mmePort": 333,
     #     "plmnId": "00101"
     # },
-    # "selectedPhys": [ 
+    # "selectedPhys": [
     # (Sólo se aceptan interfaces de tipo SUB6_ACCESS,
     # LTE_PRIMARY_PLMN y WIRED_TUNNEL)
     #     14, 23
@@ -1042,8 +1048,8 @@ def registerNewSWAMService(chunk_id):
     # "vlanId": 201, (1-4095)
     # "wirelessConfig": {
     #     "encryption": "WPA", (NONE, WPA, WPA2, WEP aceptados)
-    #     "password": "secret", 
-    # (No se aceptan espacios. Debe contener un mínimo de 
+    #     "password": "secret",
+    # (No se aceptan espacios. Debe contener un mínimo de
     # 8 caracteres o estar vacia en caso de encryption == "NONE")
     #     "ssid": "Test" (No se aceptan espacios)
     # }
@@ -1082,11 +1088,13 @@ def registerNewSWAMService(chunk_id):
 
             if "wirelessConfig" in service_dict.keys():
                 if service_dict["wirelessConfig"]:
-                    if service_dict["wirelessConfig"]["encryption"] not in ENCRYPTION_TYPES:
+                    if service_dict["wirelessConfig"]["encryption"] not in \
+                            ENCRYPTION_TYPES:
                         return errorResponder(
                             "VERIFICATION_ERROR", "Malformed request")
                     elif len(service_dict["wirelessConfig"]["password"]) < 8:
-                        if service_dict["wirelessConfig"]["encryption"] != "NONE":
+                        if service_dict[
+                                "wirelessConfig"]["encryption"] != "NONE":
                             return errorResponder(
                                 "VERIFICATION_ERROR", "Malformed request")
                     elif ' ' in service_dict["wirelessConfig"]["ssid"]:
@@ -1127,8 +1135,8 @@ def registerNewSWAMService(chunk_id):
                     controllers_phys[phy.controller_id].append(phy.id)
                     controllers_xref[phy.controller_id].append(
                         phy.phy_id_controller)
-                    controllers_content[phy.controller_id]["selectedPhys"].append(
-                        phy.phy_id_controller)
+                    controllers_content[phy.controller_id]["selectedPhys"].\
+                        append(phy.phy_id_controller)
                 else:
                     controllers_phys[phy.controller_id] = [phy.id]
                     controllers_xref[phy.controller_id] = [
@@ -1141,7 +1149,8 @@ def registerNewSWAMService(chunk_id):
                         controllers_content[phy.controller_id]["lteConfig"] = \
                             service_dict["lteConfig"]
                     if "wirelessConfig" in service_dict.keys():
-                        controllers_content[phy.controller_id]["wirelessConfig"] = service_dict["wirelessConfig"]
+                        controllers_content[phy.controller_id][
+                            "wirelessConfig"] = service_dict["wirelessConfig"]
 
                 # Create a new vif and add to database
                 # Get the next free ID in db
@@ -1163,7 +1172,7 @@ def registerNewSWAMService(chunk_id):
                 # else:
                 #     new_service_id = db_id_list[len(db_id_list)-1]+1
 
-                # TODO: Name the new vif. At the moment, it just takes the 
+                # TODO: Name the new vif. At the moment, it just takes the
                 # phy name followed by the new_vif_id
 
                 new_vif_dict = {
@@ -1202,14 +1211,17 @@ def registerNewSWAMService(chunk_id):
             service = Service(
                 controllers_services=str({}),
                 controllers_phys=str(controllers_xref),
-                lteConfigCellReserved=service_dict["lteConfig"]["cellReserved"],
+                lteConfigCellReserved=service_dict[
+                    "lteConfig"]["cellReserved"],
                 lteConfigMMEAddress=service_dict["lteConfig"]["mmeAddress"],
                 lteConfigMMEPort=service_dict["lteConfig"]["mmePort"],
                 lteConfigPLMNId=service_dict["lteConfig"]["plmnId"],
                 selectedPhys=str(service_dict["selectedPhys"]),
                 selectedVifs=str(selected_vifs),
-                wirelessConfigEncryption=service_dict["wirelessConfig"]["encryption"],
-                wirelessConfigPassword=service_dict["wirelessConfig"]["password"],
+                wirelessConfigEncryption=service_dict[
+                    "wirelessConfig"]["encryption"],
+                wirelessConfigPassword=service_dict[
+                    "wirelessConfig"]["password"],
                 wirelessConfigSSID=service_dict["wirelessConfig"]["ssid"],
                 vlanId=service_dict["vlanId"],
                 service_json=json.dumps(service_dict)
@@ -1223,7 +1235,7 @@ def registerNewSWAMService(chunk_id):
             session.add(vlan)
             session.add(service)
             session.flush()
-            
+
             # Update Chunk in database
             # update serviceList
             serviceList = json.loads(chunk.serviceList)
@@ -1238,8 +1250,7 @@ def registerNewSWAMService(chunk_id):
             updated_chunk["serviceList"].append(service_dict)
             chunk.chunk_json = json.dumps(updated_chunk)
             service.service_json = json.dumps(service_dict)
-            session.flush()
-            
+            session.flush()          
 
             # Register the service on each controller
             controllers_services_dict = {}
@@ -1385,7 +1396,8 @@ def removeExistingSWAMService(chunk_id, service_id, interface=NORTHBOUND):
                 session.delete(service)
 
                 session.commit()
-                return API_RESPONSE["OK"]["content"], API_RESPONSE["OK"]["code"]
+                return (API_RESPONSE["OK"]["content"],
+                        API_RESPONSE["OK"]["code"])
         return errorResponder(
             "NOTFOUND", "Item not found")
     except NoResultFound:
