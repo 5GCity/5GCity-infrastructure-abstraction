@@ -1076,8 +1076,21 @@ def registerNewSWAMService(chunk_id):
             service_dict = json.loads(content)
 
             # if "lteConfig" in service_dict.keys():
-            if service_dict["lteConfig"]:
-                pass
+            if "lteConfig" in service_dict.keys():
+                if service_dict["lteConfig"]:
+                    pass
+                    # if service_dict["lteConfig"]["encryption"] not in \
+                    #         ENCRYPTION_TYPES:
+                    #     return errorResponder(
+                    #         "VERIFICATION_ERROR", "Malformed request")
+                    # elif len(service_dict["lteConfig"]["password"]) < 8:
+                    #     if service_dict[
+                    #             "wirelessConfig"]["encryption"] != "NONE":
+                    #         return errorResponder(
+                    #             "VERIFICATION_ERROR", "Malformed request")
+                    # elif ' ' in service_dict["lteConfig"]["ssid"]:
+                    #     return errorResponder(
+                    #         "VERIFICATION_ERROR", "Malformed request")
             else:
                 service_dict["lteConfig"] = {
                     "cellReserved": None,
