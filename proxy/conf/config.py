@@ -344,7 +344,7 @@ CONTROLLERS = [
         'url': 'https://{}:{}/wsg/api/public',
         'topology': RUCKUS_INIT_TOPOLOGY,
         'username': 'admin',
-        'password': 'SevenGW1-F1'
+        'password': *********
      },
      {
          'id': 1,
