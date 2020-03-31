@@ -2,7 +2,7 @@
 
 5GCity-Infrastructure-Abstraction between Slice Manager and RAN Controllers (i2CAT RAN Controller &amp; Ruckus Controller)
 
-## Installing Agnostic Wireless Proxy and its requirements
+## Installing RAN Proxy and its requirements
 
 ```sh
 $ git clone https://github.com/5GCity/5GCity-infrastructure-abstraction.git
